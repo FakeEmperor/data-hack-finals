@@ -71,7 +71,7 @@ class MockInterop(BaseInteropBackend):
             self._actual_score = Results.from_dict(self._score)
             return self._actual_score
         else:
-            return Task.from_dict(self._tasks[len(self._solutions)])
+            return Task.from_dict(self._tasks[len(self._solutions)]['data'])
 
 
 class TaskReader:

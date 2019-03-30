@@ -1,7 +1,7 @@
 """
 
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import NamedTuple
 import numpy as np
 
@@ -60,9 +60,20 @@ class Task:
                     x=data['x'],
                     y=data['y'])
 
+    def to_dict(self) -> dict:
+        """
+        Serialize into dictionary.
+        """
+        return {
+            **asdict(self),
+            **{
+                "vx": self.vx,
+                "vy": self.vy
+            }
+        }
 
-@dataclass
-class Solution:
+
+class Solution(NamedTuple):
     """
     Solution to the task point.
     """
@@ -89,4 +100,4 @@ class Results(NamedTuple):
         """
         Deserialize from data dictionary.
         """
-        return Results(score=data['score'])
+        return Results(score=data['scores'])

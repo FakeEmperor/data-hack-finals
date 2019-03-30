@@ -3,7 +3,9 @@ Base library for interactions with the backend.
 """
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Optional, Tuple
+
+import pandas as pd
 
 from dno.proto.data import Solution, Map, Task, Results
 
@@ -17,9 +19,39 @@ class BaseInteropBackend:
         raise NotImplementedError()
 
     @abstractmethod
-    def get_map(self) -> Map:
+    def start_task(self) -> Map:
         raise NotImplementedError()
 
     @abstractmethod
     def send_solution(self, solution: Solution) -> Union[Task, Results]:
         raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def session_ended(self) -> bool:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def current_iteration(self) -> int:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def results(self) -> Optional[Results]:
+        """
+        Task results when the last session has ended.
+        """
+        raise NotImplementedError()
+
+    def get_csv(self) -> Tuple[Map, pd.DataFrame, Results]:
+        """
+        Get CSVs
+        """
+        map = self.start_task()
+        tasks = []
+        while not self.session_ended:
+            tasks.append(self.send_solution(Solution(ready=False)))
+        result = self.results
+        frame = pd.DataFrame(data=[task.to_dict() for task in tasks[:-1]])
+        return map, frame, result
