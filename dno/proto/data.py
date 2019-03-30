@@ -19,7 +19,7 @@ class Map:
 
 
 @dataclass
-class TaskData:
+class Task:
     """
     Data point
     """
@@ -50,6 +50,16 @@ class TaskData:
         """
         return self.speed * self._psi_sin
 
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Task':
+        """
+        Deserialize from data dictionary.
+        """
+        return Task(speed=data['speed'],
+                    psi=data['psi'],
+                    x=data['x'],
+                    y=data['y'])
+
 
 class Solution(NamedTuple):
     """
@@ -63,3 +73,17 @@ class Solution(NamedTuple):
             "x": self.x,
             "y": self.y,
         }
+
+
+class Results(NamedTuple):
+    """
+    Results after task finishes
+    """
+    score: float
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Results':
+        """
+        Deserialize from data dictionary.
+        """
+        return Results(score=data['score'])
