@@ -31,8 +31,8 @@ class Task:
     _psi_sin: np.float = 0
 
     def __post_init__(self):
-        self._psi_cos = np.arccos(self.psi)
-        self._psi_sin = np.arcsin(self.psi)
+        self._psi_cos = np.cos(np.deg2rad(self.psi))
+        self._psi_sin = np.sin(np.deg2rad(self.psi))
 
     @property
     def vy(self) -> float:

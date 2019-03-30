@@ -4,7 +4,7 @@ from typing import Union, Sequence, Tuple, IO, BinaryIO, List
 from loguru import logger
 
 from dno.proto.data import Map, Solution, Task, Results
-from .base import BaseInteropBackend
+from dno.proto.base import BaseInteropBackend
 
 
 class MockInterop(BaseInteropBackend):
