@@ -2,7 +2,7 @@
 
 """
 from dataclasses import dataclass
-from typing import List, NamedTuple
+from typing import NamedTuple
 import numpy as np
 
 

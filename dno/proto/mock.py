@@ -96,6 +96,3 @@ if __name__ == "__main__":
     test = TaskReader(r"E:\Source\Repos\ARGUS\PROJECTS\BEST.Hack\Finals\data\besthack19\task1")
     tests = test.read_all()
     logger.debug(tests)
-#map_str = test.read_map()
-#map_str_json = test.read_map_j()
-#print("")
