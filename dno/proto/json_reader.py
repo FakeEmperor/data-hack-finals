@@ -3,8 +3,9 @@ Govno dlya chteniya govna
 """
 
 import json
-from le_convert import to_int
 from pathlib import Path
+from typing import Union
+
 
 class TaskReader:
     def __init__(self, task_path):
@@ -12,16 +13,23 @@ class TaskReader:
             raise FileNotFoundError(f"Error: can't find file \"{task_path}\"")
         self.io_wrapper = open(task_path)
 
+    @staticmethod
+    def to_int(data: Union[bytes, str]):
+        data = bytes(data)
+        if len(data) != 4:
+            raise ValueError("Data should be 4 bytes long")
+        return int.from_bytes(data, byteorder="little")
+
     def read_next(self):
         try:
-            size = to_int(self.io_wrapper.read(4))
+            size = self.to_int(self.io_wrapper.read(4))
         except IOError:
             return ""
         return self.io_wrapper.read(size)
 
     def read_map(self):
         self.io_wrapper.seek(0)
-        size = to_int(self.io_wrapper.read(4))
+        size = self.to_int(self.io_wrapper.read(4))
         return self.io_wrapper.read(size)
 
     def read_next_j(self):
