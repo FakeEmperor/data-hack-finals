@@ -19,7 +19,7 @@ class BaseInteropBackend:
         raise NotImplementedError()
 
     @abstractmethod
-    def start_task(self) -> Map:
+    def start_task(self, task_name: str) -> Map:
         raise NotImplementedError()
 
     @abstractmethod
@@ -44,14 +44,14 @@ class BaseInteropBackend:
         """
         raise NotImplementedError()
 
-    def get_csv(self) -> Tuple[Map, pd.DataFrame, Results]:
+    def get_csv(self, task_name: str) -> Tuple[Map, pd.DataFrame, Results]:
         """
         Get CSVs
         """
-        map = self.start_task()
+        map_data = self.start_task(task_name)
         tasks = []
         while not self.session_ended:
             tasks.append(self.send_solution(Solution(ready=False)))
         result = self.results
         frame = pd.DataFrame(data=[task.to_dict() for task in tasks[:-1]])
-        return map, frame, result
+        return map_data, frame, result
