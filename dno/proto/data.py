@@ -15,7 +15,8 @@ class Map:
 
     @classmethod
     def from_dict(cls, data: dict):
-        return cls(data=np.asarray(data["map"]))
+        size = int(np.sqrt(len(data["map"])))
+        return cls(data=np.asarray(data["map"]).reshape(size, size))
 
 
 @dataclass
