@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Union, Sequence, Tuple, IO, BinaryIO, List
+from typing import Union, Sequence, Tuple, IO, BinaryIO, List, Optional
 from loguru import logger
 
 from dno.proto.data import Map, Solution, Task, Results
@@ -11,42 +11,67 @@ class MockInterop(BaseInteropBackend):
     """
     MockInterop
     """
+
+    @property
+    def session_ended(self) -> bool:
+        """
+        True when session has ended.
+        """
+        return len(self._solutions) >= len(self._tasks)
+
+    @property
+    def current_iteration(self) -> int:
+        return len(self._solutions)
+
     def __init__(self, base_dir: Union[Path, str], task: str):
         self.base_dir = Path(base_dir)
         self.task = task
         self._reader = TaskReader(base_dir / task)
-        self._map, self._tasks_and_score = self._reader.read_all()
-        self.current_task_index = 0
+        self._map, self._tasks, self._score = self._reader.read_all()
         self._solutions: List[dict] = []
+        self._actual_score: Results = None
+
+    @property
+    def results(self) -> Optional[Results]:
+        return self._actual_score
 
     @property
     def current_task(self) -> str:
+        """
+        Current task name.
+        """
         return self.task
 
     @property
     def num_tasks(self) -> int:
         """
-        Get number of tasks in the mock
+        Get number of tasks in the mock.
         """
-        return len(self._tasks_and_score)
+        return len(self._tasks)
 
-    def get_map(self) -> Map:
+    def start_task(self) -> Map:
         """
-        Get current map in mocked data
-        :return: Map
+        Start task session and get the current map.
+        :return: Map instance.
         """
+        self._solutions = []
+        self._actual_score = None
         return Map.from_dict(self._map)
 
     def send_solution(self, solution: Solution) -> Union[Task, Results]:
-        if self.current_task_index > len(self._tasks_and_score):
+        """
+        Send solution to the backend and receive either new task or results.
+        :param solution:  Solution to send.
+        :return:          Either task or results.
+        """
+        if self.session_ended:
             raise RuntimeError("You should stahp!")
         self._solutions.append(solution.to_dict())
-        task_or_score = self._tasks_and_score[self.current_task_index]
-        self.current_task_index += 1
-        if "score" in task_or_score:
-            return Results.from_dict(task_or_score)
+        if self.session_ended:  # last iteration
+            self._actual_score = Results.from_dict(self._score)
+            return self._actual_score
         else:
-            return Task.from_dict(task_or_score)
+            return Task.from_dict(self._tasks[len(self._solutions)])
 
 
 class TaskReader:
@@ -67,7 +92,7 @@ class TaskReader:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._io_wrapper.close()
 
-    def read_all(self) -> Tuple[dict, Sequence[dict]]:
+    def read_all(self) -> Tuple[dict, Sequence[dict], dict]:
         with self:
             land_map = self.read_next_response(self._io_wrapper)
             tasks = []
@@ -77,7 +102,7 @@ class TaskReader:
                     break
                 tasks.append(self.read_next_response(self._io_wrapper, next_size))
 
-        return land_map, tasks
+        return land_map, tasks[:-1], tasks[-1]
 
     @staticmethod
     def to_int(data: Union[bytes, str]):
