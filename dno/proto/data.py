@@ -61,17 +61,20 @@ class Task:
                     y=data['y'])
 
 
-class Solution(NamedTuple):
+@dataclass
+class Solution:
     """
     Solution to the task point.
     """
-    x: int
-    y: int
+    x: int = 0
+    y: int = 0
+    ready: bool = True
 
     def to_dict(self) -> dict:
         return {
             "x": self.x,
             "y": self.y,
+            "ready": self.ready,
         }
 
 

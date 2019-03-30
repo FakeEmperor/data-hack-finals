@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+
 def get_project_root()-> Optional[Path]:
     current_dir = Path.cwd()
     while True:
@@ -10,4 +11,3 @@ def get_project_root()-> Optional[Path]:
             current_dir = current_dir.parent
         else:
             return None
-
