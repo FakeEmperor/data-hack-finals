@@ -9,7 +9,7 @@ from dno.proto.base import BaseInteropBackend
 
 class MockInterop(BaseInteropBackend):
     """
-    MockInterop
+    MockInterop for interactions with local storage.
     """
 
     @property
@@ -23,10 +23,10 @@ class MockInterop(BaseInteropBackend):
     def current_iteration(self) -> int:
         return len(self._solutions)
 
-    def __init__(self, base_dir: Union[Path, str], task: str):
+    def __init__(self, base_dir: Union[Path, str], task_name: str):
         self.base_dir = Path(base_dir)
-        self.task = task
-        self._reader = TaskReader(base_dir / task)
+        self.task = task_name
+        self._reader = TaskReader(base_dir / task_name)
         self._map, self._tasks, self._score = self._reader.read_all()
         self._solutions: List[dict] = []
         self._actual_score: Results = None
@@ -112,9 +112,9 @@ class TaskReader:
         return int.from_bytes(data, byteorder="little")
 
     @staticmethod
-    def read_next_response(file: IO, packet_size: bytes=None):
-        size = TaskReader.to_int(packet_size or file.read(4))
-        return json.loads(file.read(size))
+    def read_next_response(stream: IO, packet_size: bytes=None) -> dict:
+        size = TaskReader.to_int(packet_size or stream.read(4))
+        return json.loads(stream.read(size))
 
 
 if __name__ == "__main__":
