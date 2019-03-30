@@ -19,6 +19,7 @@ class Map:
         return cls(data=np.asarray(data["map"]).reshape(size, size))
 
 
+
 @dataclass
 class Task:
     """
@@ -26,6 +27,7 @@ class Task:
     """
     x: int = 0
     y: int = 0
+    height: int = 0
     speed: int = 0
     psi: int = 0
     _psi_cos: np.float = 0
@@ -59,6 +61,7 @@ class Task:
         return Task(speed=data['speed'],
                     psi=data['psi'],
                     x=data['x'],
+                    height=data['height'],
                     y=data['y'])
 
     def to_dict(self) -> dict:

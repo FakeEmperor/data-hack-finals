@@ -7,3 +7,5 @@ tornado<=5.1.1
 jupyter_nbextensions_configurator
 matplotlib
 sklearn
+qgrid
+seaborn
