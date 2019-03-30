@@ -23,7 +23,6 @@ class Map:
         return cls(data=np.asarray(data["map"]).reshape(size, size))
 
 
-
 @dataclass
 class Task:
     """
