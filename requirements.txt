@@ -5,4 +5,5 @@ loguru
 jupyterlab
 tornado<=5.1.1
 jupyter_nbextensions_configurator
-__pycache__
+matplotlib
+sklearn
