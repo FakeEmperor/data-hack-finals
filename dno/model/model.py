@@ -1,7 +1,5 @@
 from copy import deepcopy
-from math import sqrt
 from dno.proto.data import Task, Solution, Map
-from dno.proto.mock import TaskReader
 import numpy as np
 from typing import List, Optional, Tuple
 from time import time
@@ -47,7 +45,7 @@ class Model:
         for i in range(min_possible_speed, max_possible_speed):
             task_tmp.speed = i
             task_tmp.x, task_tmp.y = self.clip_coordinates(x + task_tmp.vx, y + task_tmp.vy)
-            delta_tmp = abs(task.height - self.map_arr[int(task_tmp.x)][int(task_tmp.y)])
+            delta_tmp = abs(task.height - self.map_arr[int(task_tmp.x-1)][int(task_tmp.y-1)])
             if best_delta is None or best_delta > delta_tmp:
                 best_delta = delta_tmp
                 new_speed = task_tmp.speed
@@ -64,7 +62,7 @@ class Model:
         else:
             if task.speed == 0:
                 if not self.enable_infer_speed:
-                    task.speed = 1
+                    task.speed = self.last_speed
                     logger.debug("Not inferencing speed")
                 else:
                     task.speed = self.infer_speed(task)
@@ -104,9 +102,6 @@ class Model:
         else:
             return Solution(x=self.coords[0], y=self.coords[1], ready=True)
 
-    # if [task.y, task.x] in self.candidates:
-    #     print("Right point into candidates")
-
     def _find_candidates(self, task: Task):
         if not self.candidates:
             self._init_candidates(task)
@@ -129,7 +124,6 @@ class Model:
                 logger.warning(f"[candidates: {len(self.candidates)}] Breaking since "
                                f"number of candidates > max ({self.max_candidates})...")
                 return
-                self.candidates = [(self.map_arr.shape[0] // 2, self.map_arr.shape[1] // 2)]
 
     def _filter_by_task(self, task: Task):
         next_candidates = []
@@ -148,5 +142,5 @@ class Model:
                 break
         if not next_candidates:
             logger.warning(f"No new candidates selected, selecting first from first...")
-            next_candidates = self.prev_cands[len(self.prev_cands) // 2:]
+            next_candidates = [self.prev_cands[0]]
         return next_candidates
