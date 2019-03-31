@@ -7,6 +7,7 @@ from dno.proto.mock import TaskReader
 from dno.proto.data import Task, Solution, Map
 from dno.proto import utils
 from loguru import logger
+from argparse import ArgumentParser
 
 
 def debug_task(model_class: Type[Model], task_num: int):
@@ -45,4 +46,10 @@ def run(task_num, model_class: Type[Model]=Model, debug: bool=True):
 
 
 if __name__ == "__main__":
-    run(1)
+    default_task_num = 7
+    parser = ArgumentParser()
+    parser.add_argument("task_num", type=int, metavar="task_num",
+                        help="task number to test on",
+                        default=default_task_num)
+    args = parser.parse_args()
+    run(args.task_num)
