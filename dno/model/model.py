@@ -1,14 +1,13 @@
 from math import sqrt
-from dno.proto.data import Task, Solution
-from dno.proto.mock import TaskReader
+from dno.proto.data import Task, Solution, Map
 import numpy as np
 from typing import List
 
 
 class Model:
-    def __init__(self, map_raw: dict, c=400):
-        self.n: int = int(sqrt(len(map_raw["map"])))
-        self.map_arr: np.array = np.array(map_raw["map"]).reshape(self.n, self.n)
+    def __init__(self, map_raw: Map, c=400):
+        self.n: int = map_raw.data.shape[0]
+        self.map_arr: np.array = map_raw.data
         self.candidates: List[(int, int)] = []
         self.prev_cands: List[(int, int)] = []
         self.c: int = c
@@ -46,11 +45,15 @@ class Model:
             self.candidates = self._filter_by_task(task)
 
     def _init_candidates(self, task: Task):
+        tmp_n = 0
         for i in range(0, self.n):
             for j in range(0, self.n):
                 delta = task.height - self.map_arr[j][i]
                 if delta >= -self.c and delta <= self.c:
                     self.candidates.append([j, i])
+                if tmp_n > 45000:
+                    return
+                tmp_n += 1
 
     def _filter_by_task(self, task: Task):
         next_candidates = []

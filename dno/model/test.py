@@ -1,24 +1,18 @@
 from dno.model.model import Model
 from dno.proto.mock import TaskReader
-from dno.proto.data import Task
+from dno.proto.data import Task, Solution
 from dno.proto import utils
+from dno.proto.backend import BackendInteraction
+from loguru import logger
 
 if __name__ == "__main__":
-    task_num = 1
-    task_reader = TaskReader(utils.get_task_path(task_num))
-    land_map, tasks, _ = task_reader.read_all()
-    tasks = list(map(lambda t: Task.from_dict(t['data']), tasks))
-    model = Model(map_raw=land_map)
-    mse = 0
-    for task in tasks:
-        sol = model.handle_task(task)
-        if not sol.ready:
-            mse += 0.5
-        else:
-            err =  (sol.x - task.x) ** 2 + (sol.y - task.y) ** 2
-            err /= len(land_map['map'])
-            mse += err
-    mse /= len(tasks)
-    print(f'Task: {task_num} MSE: {mse}')
+    backend = BackendInteraction(backend_host='besthack19.sytes.net', backed_port=4242, auth="exp3ct0pat5onum")
+    land_map = backend.start_task(1)
+    task_steps = []
+    model = Model(land_map)
+    task = backend.send_solution(Solution(ready=False))
+    while not backend.session_ended:
+        task = backend.send_solution(model.handle_task(task))
 
+    logger.success(f"Final score: {backend.results}")
 

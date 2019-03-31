@@ -12,6 +12,7 @@ class PetrFinder:
         self.candidates = []
         self.prev_cands = []
         self.c = c
+        self.prev_speed = 0
 
     def handle_task(self, task: Task):
         if not self.candidates:
@@ -32,6 +33,10 @@ class PetrFinder:
 
     def filter_by_task(self, task: Task):
         next_candidates = []
+        if task.speed == 0:
+            task.speed = self.prev_speed
+        else:
+            self.prev_speed = task.speed
         for candidate in self.candidates:
             next_x = candidate[0] + int(round(task.vy))
             next_y = candidate[1] + int(round(task.vx))
@@ -50,7 +55,7 @@ f = open("..\\govnoresult.txt", "w")
 def test(task_num):
     tr = TaskReader("..\\data\\besthack19\\task" + str(task_num))
     map_raw, data_raw, _ = tr.read_all()
-
+    print(f"Handeling {task_num} task")
     pf = PetrFinder(map_raw)
     cand_tmp = None
     last_data = None
@@ -61,13 +66,15 @@ def test(task_num):
         pf.handle_task(d)
         cand_tmp = pf.candidates
         print(len(pf.candidates))
+        if(len(pf.candidates) > 60000):
+            pf.candidates = pf.candidates[:59000]
         last_data = data["data"]
         if len(pf.candidates) == 1:
             break
-    f.write(str(cand_tmp))
-    f.write(str(last_data))
-    f.write(f"Iters: {iters}")
+    f.write(str(cand_tmp) + "\n")
+    f.write("[" + str(last_data["y"]) + ", " + str(last_data["x"]) + "]\n")
+    f.write(f"Iters: {iters}\n")
 
 for i in range(1,32):
-    f.write(f"TASK{i}========================")
+    f.write(f"TASK{i}========================\n")
     test(i)
