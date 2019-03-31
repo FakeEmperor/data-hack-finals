@@ -68,7 +68,8 @@ class Model:
         for i in range(0, self.n):
             for j in range(0, self.n):
                 delta = task.height - self.map_arr[j][i]
-                if -self.c <= delta <= self.c:
+                # noinspection PyChainedComparisons
+                if delta >= -self.c and delta <= self.c:
                     self.candidates.append([j, i])
             if not self.has_time:
                 logger.warning(f"[candidates: {len(self.candidates)}] Breaking due to time limit ({self._time_limit})")
@@ -81,12 +82,15 @@ class Model:
 
     def _filter_by_task(self, task: Task):
         next_candidates = []
+        vx = int(round(task.vx))
+        vy = int(round(task.vy))
         for candidate in self.candidates:
-            next_x = candidate[0] + int(round(task.vy))
-            next_y = candidate[1] + int(round(task.vx))
+            next_x = candidate[0] + vx
+            next_y = candidate[1] + vy
             if self.n > next_x >= 0 and self.n > next_y >= 0:
                 delta = task.height - self.map_arr[next_x][next_y]
-                if -self.c < delta < self.c:
+                # noinspection PyChainedComparisons
+                if delta > -self.c and delta < self.c:
                     next_candidates.append([next_x, next_y])
             if not self.has_time:
                 logger.warning(f"[candidates: {len(next_candidates)}] Breaking due to time limit...")
