@@ -26,14 +26,14 @@ def debug_task(model_class: Type[Model], task_num: int):
     land_map = Map.from_dict(land_map)
     model = model_class(land_map)
     tasks = list(map(lambda t: Task.from_dict(t['data']), tasks))
-    mse = np.int32(0)
+    mse = 0
     for task in tasks:
-        sol = Solution(x=np.int32(1<<31 + 1), y=np.int32(1<<31+1), ready=True)
+        sol = model.handle_task(task)
         if not sol.ready:
             mse += 0.5
         else:
-            err = (np.int32(sol.x) - np.int32(task.x)) ** 2 + (np.int32(sol.y) - np.int32(task.y)) ** 2
-            err /= (np.int32(land_map.data.shape[0]) * np.int32(land_map.data.shape[1]))
+            err = (sol.x - task.x) ** 2 + (sol.y - task.y) ** 2
+            err /= (land_map.data.shape[0] * land_map.data.shape[1])
             mse += err
     mse /= len(tasks)
     logger.success(f'Task: {task_num} MSE: {mse}')
@@ -57,7 +57,7 @@ def run(task_num, model_class: Type[Model]=Model, debug: bool=True, prod: bool=T
         model = model_class(land_map)
         task = backend.send_solution(Solution(ready=False))
         while not backend.session_ended:
-            task = backend.send_solution(Solution(ready=True, x=1<<32, y=1<<32))
+            task = backend.send_solution(model.handle_task(task))
         prod_score = backend.results.score
         logger.success(f"Final PROD score: {prod_score}")
     return debug_score, prod_score
