@@ -44,6 +44,14 @@ class Model:
         else:
             x, y = self.coords
             new_x, new_y = x + task.vx, y + task.vy
+            if new_x < 0:
+                new_x += self.n/2
+            if new_x > self.n:
+                new_x -= self.n/2
+            if new_y < 0:
+                new_y += self.n/2
+            if new_y > self.n:
+                new_y -= self.n/2
             self.coords = max(0, new_x), max(0, new_y)  # KOSTYL for negative solutions
         return self._get_solution()
 

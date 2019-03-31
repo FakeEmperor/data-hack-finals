@@ -4,7 +4,7 @@ from dno.proto.data import Task, Map
 from dno.proto import utils
 
 if __name__ == "__main__":
-    task_num = 2
+    task_num = 31
     task_reader = TaskReader(utils.get_task_path(task_num))
     land_map, tasks, _ = task_reader.read_all()
     land_map = Map.from_dict(land_map)
