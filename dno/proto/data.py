@@ -1,9 +1,13 @@
 """
 
 """
+import json
 from dataclasses import dataclass, asdict
-from typing import NamedTuple
+from io import RawIOBase
+from pathlib import Path
+from typing import NamedTuple, Union, Tuple, Sequence, BinaryIO, IO
 import numpy as np
+from loguru import logger
 
 
 @dataclass
@@ -104,3 +108,64 @@ class Results(NamedTuple):
         Deserialize from data dictionary.
         """
         return Results(score=data['scores'])
+
+
+class TaskReader:
+    """
+    Govno dlya chteniya govna
+    """
+
+    def __init__(self, task_path: Union[str, Path]):
+        self.task_path = Path(task_path)
+        if not self.task_path.exists():
+            raise FileNotFoundError(f"Error: can't find file \"{task_path}\"")
+        self._io_wrapper: RawIOBase = None
+
+    def __enter__(self):
+        self._io_wrapper = open(self.task_path, 'rb')
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._io_wrapper.close()
+
+    def read_all(self) -> Tuple[dict, Sequence[dict], dict]:
+        with self:
+            land_map = self.read_next_response(self._io_wrapper)
+            tasks = []
+            while True:
+                next_size = self._io_wrapper.read(4)
+                if len(next_size) < 4:
+                    break
+                tasks.append(self.read_next_response(self._io_wrapper, next_size))
+
+        return land_map, tasks[:-1], tasks[-1]
+
+    @staticmethod
+    def to_int(data: Union[bytes, str]):
+        data = bytes(data)
+        if len(data) != 4:
+            raise ValueError("Data should be 4 bytes long")
+        return int.from_bytes(data, byteorder="little")
+
+    @staticmethod
+    def read_next_response(file: RawIOBase, packet_size: bytes=None):
+        logger.debug("Reading response...")
+        size = TaskReader.to_int(packet_size or file.read(4))
+        logger.debug(f"Response size is '{size}' bytes...")
+        data = b''
+        while len(data) < size:
+            to_read = size - len(data)
+            chunk = file.read(to_read)
+            data += chunk
+            if len(chunk) == 0:
+                raise ValueError(f"Received a null-length data when expecting {to_read} bytes!")
+            logger.debug(f"Chunk size: {len(chunk)}")
+        data = data.decode()
+        logger.debug(f"Response data is {data}")
+        return json.loads(data)
+
+
+if __name__ == "__main__":
+    test = TaskReader(r"E:\Source\Repos\ARGUS\PROJECTS\BEST.Hack\Finals\data\besthack19\task1")
+    tests = test.read_all()
+    logger.debug(tests)
