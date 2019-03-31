@@ -104,7 +104,7 @@ class BackendInteraction(BaseInteropBackend):
         logger.debug(f"Sending data: {data}")
         self.session.send(self.prepare_data(data))
         received = TaskReader.read_next_response(socket.SocketIO(self.session, mode='rb'))
-        logger.debug(f"Received data: {received}")
+        logger.debug(f"Received data: {str(received)[:70]} ({len(str(received))} bytes)")
         return received
 
     @staticmethod
@@ -131,7 +131,7 @@ class BackendInteraction(BaseInteropBackend):
 
 def main():
     backend = BackendInteraction(backend_host='besthack19.sytes.net', backed_port=4242, auth="exp3ct0pat5onum")
-    backend.start_task(2)
+    backend.start_task(4)
     task_steps = []
     while not backend.session_ended:
         data = backend.send_solution(Solution(ready=False))

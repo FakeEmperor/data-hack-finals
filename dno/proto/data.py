@@ -165,7 +165,7 @@ class TaskReader:
                 raise ValueError(f"Received a null-length data when expecting {to_read} bytes!")
             logger.debug(f"[{len(data)/size*100:.2f}%] Chunk size: {len(chunk)}")
         data = data.decode()
-        logger.debug(f"Response data is ({len(data)} bytes) {data[:100]} ...")
+        logger.debug(f"Response data is ({len(data)} bytes) {data[:70]} ...")
         return json.loads(data)
 
 
