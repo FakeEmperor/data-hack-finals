@@ -46,15 +46,11 @@ class Model:
             self.candidates = self._filter_by_task(task)
 
     def _init_candidates(self, task: Task):
-        tmp_n = 0
         for i in range(0, self.n):
             for j in range(0, self.n):
                 delta = task.height - self.map_arr[j][i]
                 if delta >= -self.c and delta <= self.c:
                     self.candidates.append([j, i])
-                if tmp_n > 45000:
-                    return
-                tmp_n += 1
 
     def _filter_by_task(self, task: Task):
         next_candidates = []
