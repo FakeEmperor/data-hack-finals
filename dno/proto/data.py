@@ -57,11 +57,14 @@ class Task:
         """
         Deserialize from data dictionary.
         """
-        return Task(speed=data['speed'],
-                    psi=data['psi'],
-                    x=data['x'],
-                    height=data['height'],
-                    y=data['y'])
+        try:
+            return Task(speed=data['speed'],
+                        psi=data['psi'],
+                        x=data['x'],
+                        height=data['height'],
+                        y=data['y'])
+        except KeyError as e:
+            raise KeyError(f"Invalid data {data} to deserialize from task: {e.args[0]}")
 
     def to_dict(self) -> dict:
         """
