@@ -43,9 +43,8 @@ class Model:
                 self.coords = x, y
         else:
             x, y = self.coords
-            new_x, new_y = x + int(round(task.vx)), y + int(round(task.vy))
+            new_x, new_y = x + task.vx, y + task.vy
             self.coords = max(0, new_x), max(0, new_y)  # KOSTYL for negative solutions
-
         return self._get_solution()
 
     def _get_solution(self) -> Solution:

@@ -97,8 +97,8 @@ class Solution(NamedTuple):
 
     def to_dict(self) -> dict:
         return {
-            "x": self.x,
-            "y": self.y,
+            "x": int(np.round(self.x)),
+            "y": int(np.round(self.y)),
             "ready": int(self.ready),
         }
 
