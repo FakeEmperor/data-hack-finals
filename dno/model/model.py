@@ -51,6 +51,8 @@ class Model:
                 delta = task.height - self.map_arr[j][i]
                 if delta >= -self.c and delta <= self.c:
                     self.candidates.append([j, i])
+            if len(self.candidates) > 220000:
+                self.candidates = [(self.map_arr.shape[0] // 2 , self.map_arr.shape[1] // 2)]
 
     def _filter_by_task(self, task: Task):
         next_candidates = []

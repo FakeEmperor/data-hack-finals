@@ -63,7 +63,10 @@ class Task:
         Deserialize from data dictionary.
         """
         try:
-            return Task(speed=data['speed'],
+            speed = data['speed']
+            if speed < 1:
+                speed = 1
+            return Task(speed=speed,
                         psi=data['psi'],
                         x=data['x'],
                         height=data['height'],
