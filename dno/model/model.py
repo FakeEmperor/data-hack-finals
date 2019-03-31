@@ -1,13 +1,15 @@
+from copy import deepcopy
 from math import sqrt
 from dno.proto.data import Task, Solution, Map
 from dno.proto.mock import TaskReader
 import numpy as np
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from time import time
 from loguru import logger
 
+
 class Model:
-    def __init__(self, map_raw: Map, c: int=400, max_candidates: int=500_000,
+    def __init__(self, map_raw: Map, c: int=400, max_candidates: int=200_000,
                  time_limit: Optional[float]=1.8):
         self.max_candidates = max_candidates
         self.n: int = map_raw.data.shape[0]
@@ -17,6 +19,7 @@ class Model:
         self.c: int = c
         self.ready: bool = False
         self.coords: (int, int) = None
+        self.last_speed: float = None
         # TIME LIMITS HANDLING
         self._task_handle_start_time = None
         self._time_limit = time_limit
@@ -33,6 +36,22 @@ class Model:
             return (time() - self._task_handle_start_time) < self._time_limit
         return True
 
+    def infer_speed(self, task: Task) -> int:
+        x, y = self.coords
+        new_speed = task.speed
+        task_tmp = deepcopy(task)
+        best_delta = None
+        min_possible_speed = max(1, int(self.last_speed)-2)
+        max_possible_speed = int(self.last_speed) + 2
+        for i in range(min_possible_speed, max_possible_speed):
+            task_tmp.speed = i
+            task_tmp.x, task_tmp.y = self.clip_coordinates(x + task_tmp.vx, y + task_tmp.vy)
+            delta_tmp = abs(task.height - self.map_arr[int(task_tmp.x)][int(task_tmp.y)])
+            if best_delta is None or best_delta > delta_tmp:
+                best_delta = delta_tmp
+                new_speed = task_tmp.speed
+        return new_speed
+
     def handle_task(self, task: Task) -> Solution:
         self.start_timing()
         if not self.ready:
@@ -42,18 +61,37 @@ class Model:
                 y, x = self.candidates[0]
                 self.coords = x, y
         else:
+            if task.speed == 0:
+                task.speed = self.infer_speed(task)
+                logger.debug(f"Inferencing speed: {task.speed}")
             x, y = self.coords
             new_x, new_y = x + task.vx, y + task.vy
-            if new_x < 0:
-                new_x += self.n/2
-            if new_x > self.n:
-                new_x -= self.n/2
-            if new_y < 0:
-                new_y += self.n/2
-            if new_y > self.n:
-                new_y -= self.n/2
+            new_x, new_y = self.bound_coordinates(new_x, new_y)
             self.coords = max(0, new_x), max(0, new_y)  # KOSTYL for negative solutions
+            self.last_speed = task.speed
         return self._get_solution()
+
+    def clip_coordinates(self, new_x: float, new_y: float) -> Tuple[float, float]:
+        if new_x < 0:
+            new_x = 0
+        if new_x > self.n:
+            new_x = self.n
+        if new_y < 0:
+            new_y = 0
+        if new_y > self.n:
+            new_y = self.n
+        return new_x, new_y
+
+    def bound_coordinates(self, new_x: float, new_y: float) -> Tuple[float, float]:
+        if new_x < 0:
+            new_x += self.n / 2
+        if new_x > self.n:
+            new_x -= self.n / 2
+        if new_y < 0:
+            new_y += self.n / 2
+        if new_y > self.n:
+            new_y -= self.n / 2
+        return new_x, new_y
 
     def _get_solution(self) -> Solution:
         if not self.ready:
@@ -104,5 +142,6 @@ class Model:
                 logger.warning(f"[candidates: {len(next_candidates)}] Breaking due to time limit...")
                 break
         if not next_candidates:
+            logger.warning(f"No new candidates selected, selecting first from first...")
             next_candidates.append(self.prev_cands[0])
         return next_candidates

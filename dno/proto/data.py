@@ -64,8 +64,6 @@ class Task:
         """
         try:
             speed = data['speed']
-            if speed < 1:
-                speed = 1
             return Task(speed=speed,
                         psi=data['psi'],
                         x=data['x'],
