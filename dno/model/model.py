@@ -6,6 +6,7 @@ from typing import List, Optional
 from time import time
 from loguru import logger
 
+
 class Model:
     def __init__(self, map_raw: Map, c: int=400, max_candidates: int=500_000,
                  time_limit: Optional[float]=1.8):
@@ -44,6 +45,14 @@ class Model:
         else:
             x, y = self.coords
             new_x, new_y = x + task.vx, y + task.vy
+            if new_x < 0:
+                new_x += self.n / 2
+            if new_x > self.n:
+                new_x -= self.n / 2
+            if new_y < 0:
+                new_y += self.n / 2
+            if new_y > self.n:
+                new_y -= self.n / 2
             self.coords = max(0, new_x), max(0, new_y)  # KOSTYL for negative solutions
         return self._get_solution()
 

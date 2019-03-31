@@ -46,7 +46,7 @@ def run(task_num, model_class: Type[Model]=Model, debug: bool=True):
 
 
 if __name__ == "__main__":
-    default_task_num = 7
+    default_task_num = 12
     parser = ArgumentParser()
     parser.add_argument("task_num", type=int, metavar="task_num",
                         help="task number to test on",
