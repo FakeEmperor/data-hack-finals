@@ -1,5 +1,6 @@
 from math import sqrt
 from dno.proto.data import Task, Solution, Map
+from dno.proto.mock import TaskReader
 import numpy as np
 from typing import List
 
@@ -7,7 +8,7 @@ from typing import List
 class Model:
     def __init__(self, map_raw: Map, c=400):
         self.n: int = map_raw.data.shape[0]
-        self.map_arr: np.array = map_raw.data
+        self.map_arr: np.ndarray = map_raw.data
         self.candidates: List[(int, int)] = []
         self.prev_cands: List[(int, int)] = []
         self.c: int = c
@@ -32,7 +33,7 @@ class Model:
         if not self.ready:
             return Solution(ready=False)
         else:
-            return Solution(x=self.coords[0], y=self.coords[0], ready=True)
+            return Solution(x=self.coords[0], y=self.coords[1], ready=True)
 
     # if [task.y, task.x] in self.candidates:
     #     print("Right point into candidates")

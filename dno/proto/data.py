@@ -19,8 +19,9 @@ class Map:
 
     @classmethod
     def from_dict(cls, data: dict):
-        size = int(np.sqrt(len(data["map"])))
-        return cls(data=np.asarray(data["map"]).reshape(size, size))
+        n: int = int(np.sqrt(len(data["map"])))
+        map_arr: np.array = np.array(data["map"]).reshape(n, n)
+        return cls(data=map_arr)
 
 
 @dataclass
@@ -95,7 +96,7 @@ class Solution(NamedTuple):
         return {
             "x": self.x,
             "y": self.y,
-            "ready": self.ready,
+            "ready": int(self.ready),
         }
 
 
@@ -162,9 +163,9 @@ class TaskReader:
             data += chunk
             if len(chunk) == 0:
                 raise ValueError(f"Received a null-length data when expecting {to_read} bytes!")
-            logger.debug(f"Chunk size: {len(chunk)}")
+            logger.debug(f"[{len(data)/size*100:.2f}%] Chunk size: {len(chunk)}")
         data = data.decode()
-        logger.debug(f"Response data is {data}")
+        logger.debug(f"Response data is ({len(data)} bytes) {data[:100]} ...")
         return json.loads(data)
 
 
