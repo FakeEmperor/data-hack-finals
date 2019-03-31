@@ -10,8 +10,9 @@ from loguru import logger
 
 class Model:
     def __init__(self, map_raw: Map, c: int=400, max_candidates: int=200_000,
-                 time_limit: Optional[float]=1.8):
+                 time_limit: Optional[float]=1.8, enable_infer_speed: bool=False):
         self.max_candidates = max_candidates
+        self.enable_infer_speed = enable_infer_speed
         self.n: int = map_raw.data.shape[0]
         self.map_arr: np.ndarray = map_raw.data
         self.candidates: List[(int, int)] = []
@@ -62,8 +63,12 @@ class Model:
                 self.coords = x, y
         else:
             if task.speed == 0:
-                task.speed = self.infer_speed(task)
-                logger.debug(f"Inferencing speed: {task.speed}")
+                if not self.enable_infer_speed:
+                    task.speed = 1
+                    logger.debug("Not inferencing speed")
+                else:
+                    task.speed = self.infer_speed(task)
+                    logger.debug(f"Inferencing speed: {task.speed}")
             x, y = self.coords
             new_x, new_y = x + task.vx, y + task.vy
             new_x, new_y = self.bound_coordinates(new_x, new_y)
@@ -143,5 +148,5 @@ class Model:
                 break
         if not next_candidates:
             logger.warning(f"No new candidates selected, selecting first from first...")
-            next_candidates.append(self.prev_cands[0])
+            next_candidates = self.prev_cands[len(self.prev_cands) // 2:]
         return next_candidates
